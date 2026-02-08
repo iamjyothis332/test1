@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Just a few questions…</title>
+  <title>Just one thing…</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -21,19 +21,33 @@
     }
 
     .container {
-      max-width: 450px;
+      max-width: 460px;
       width: 100%;
     }
 
     h1 {
       font-family: 'Pacifico', cursive;
       font-size: 32px;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
+    }
+
+    button {
+      padding: 14px 30px;
+      border-radius: 30px;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      background: #ff4d6d;
+      color: white;
+    }
+
+    .hidden {
+      display: none;
     }
 
     .score {
       font-size: 14px;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       color: #444;
     }
 
@@ -46,24 +60,15 @@
       display: block;
       width: 100%;
       margin: 10px 0;
-      padding: 12px;
-      border-radius: 25px;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-      background: #fff;
-      transition: 0.2s;
+      background: white;
+      color: #333;
     }
 
     .options button:hover {
       background: #ffedf1;
     }
 
-    .hidden {
-      display: none;
-    }
-
-    /* Valentine section */
+    /* Valentine styles */
     .heart {
       font-size: 100px;
       animation: pulse 1.5s infinite;
@@ -83,22 +88,18 @@
 
     .buttons button {
       position: absolute;
-      padding: 14px 32px;
       font-size: 18px;
-      border-radius: 30px;
-      border: none;
-      cursor: pointer;
     }
 
     #yes {
       background: #ff4d6d;
-      color: white;
       left: 50%;
       transform: translateX(-50%);
     }
 
     #no {
       background: #ddd;
+      color: #333;
       left: 50%;
       top: 80px;
       transform: translateX(-50%);
@@ -132,12 +133,14 @@
   <!-- QUIZ -->
   <div id="quiz">
     <h1>Quick quiz 😌</h1>
-    <div class="score">Score: <span id="score">0</span>/5</div>
-    <div class="question" id="question"></div>
-    <div class="options" id="options"></div>
+    <button id="startQuiz">Let’s begin ➝</button>
+
+    <div class="score hidden">Score: <span id="score">0</span>/5</div>
+    <div class="question hidden" id="question"></div>
+    <div class="options hidden" id="options"></div>
   </div>
 
-  <!-- RESULT MESSAGE -->
+  <!-- RESULT -->
   <div id="result" class="hidden">
     <h1 id="resultText"></h1>
     <button onclick="startValentine()">Next ➝</button>
@@ -194,18 +197,29 @@
   let current = 0;
   let score = 0;
 
-  const qEl = document.getElementById("question");
-  const optEl = document.getElementById("options");
+  const startBtn = document.getElementById("startQuiz");
+  const scoreBox = document.querySelector(".score");
+  const questionEl = document.getElementById("question");
+  const optionsEl = document.getElementById("options");
   const scoreEl = document.getElementById("score");
 
+  startBtn.onclick = () => {
+    startBtn.style.display = "none";
+    scoreBox.classList.remove("hidden");
+    questionEl.classList.remove("hidden");
+    optionsEl.classList.remove("hidden");
+    loadQuestion();
+  };
+
   function loadQuestion() {
-    qEl.textContent = questions[current].q;
-    optEl.innerHTML = "";
+    questionEl.textContent = questions[current].q;
+    optionsEl.innerHTML = "";
+
     questions[current].options.forEach((opt, i) => {
       const btn = document.createElement("button");
       btn.textContent = opt;
       btn.onclick = () => selectAnswer(i);
-      optEl.appendChild(btn);
+      optionsEl.appendChild(btn);
     });
   }
 
@@ -213,12 +227,80 @@
     if (i === questions[current].answer) score++;
     scoreEl.textContent = score;
     current++;
+
     if (current < questions.length) {
-      document.addEventListener("DOMContentLoaded", loadQuestion);
+      loadQuestion();
     } else {
       showResult();
     }
   }
 
-  fun
+  function showResult() {
+    document.getElementById("quiz").classList.add("hidden");
+    document.getElementById("result").classList.remove("hidden");
 
+    const text = document.getElementById("resultText");
+
+    if (score < 3) {
+      text.textContent = `It’s bad you got only ${score} right… but I’ll give you a free pass 😌`;
+    } else if (score < 5) {
+      text.textContent = "Wow not bad Nish, you’re qualified to answer the next question 😉";
+    } else {
+      text.textContent = "Damn Nish you’re sharp 😏 Let’s put those skills into play now.";
+    }
+  }
+
+  function startValentine() {
+    document.getElementById("result").classList.add("hidden");
+    document.getElementById("valentine").classList.remove("hidden");
+  }
+
+  /* NO button dodge logic */
+  const noBtn = document.getElementById("no");
+  const yesBtn = document.getElementById("yes");
+  const joke = document.getElementById("joke");
+  const yay = document.querySelector(".yay");
+
+  let nx = 200, ny = 200;
+
+  document.addEventListener("mousemove", e => {
+    if (document.getElementById("valentine").classList.contains("hidden")) return;
+
+    const r = noBtn.getBoundingClientRect();
+    const dx = e.clientX - (r.left + r.width / 2);
+    const dy = e.clientY - (r.top + r.height / 2);
+    const d = Math.sqrt(dx*dx + dy*dy);
+
+    if (d < 100) {
+      joke.classList.add("show");
+      const angle = Math.atan2(dy, dx);
+      nx -= Math.cos(angle) * 25;
+      ny -= Math.sin(angle) * 25;
+      nx = Math.max(20, Math.min(window.innerWidth - 120, nx));
+      ny = Math.max(20, Math.min(window.innerHeight - 60, ny));
+      noBtn.style.left = nx + "px";
+      noBtn.style.top = ny + "px";
+    }
+  });
+
+  yesBtn.onclick = () => {
+    yay.style.display = "block";
+    yesBtn.style.display = "none";
+    noBtn.style.display = "none";
+    joke.style.display = "none";
+
+    const end = Date.now() + 4000;
+    (function pop() {
+      confetti({
+        particleCount: 8,
+        spread: 360,
+        startVelocity: 30,
+        origin: { x: Math.random(), y: Math.random() - 0.2 }
+      });
+      if (Date.now() < end) requestAnimationFrame(pop);
+    })();
+  };
+</script>
+
+</body>
+</html>
