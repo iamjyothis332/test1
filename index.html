@@ -2,36 +2,70 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Valentine?</title>
+  <title>Just a few questions…</title>
 
-  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-
-  <!-- Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
     body {
       margin: 0;
-      height: 100vh;
+      min-height: 100vh;
       background: linear-gradient(135deg, #ffe6ea, #ffd6e0);
+      font-family: 'Poppins', sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-family: 'Poppins', sans-serif;
-      overflow: hidden;
       padding: 20px;
       text-align: center;
     }
 
     .container {
-      max-width: 420px;
+      max-width: 450px;
       width: 100%;
-      position: relative;
     }
 
+    h1 {
+      font-family: 'Pacifico', cursive;
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .score {
+      font-size: 14px;
+      margin-bottom: 20px;
+      color: #444;
+    }
+
+    .question {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    .options button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 12px;
+      border-radius: 25px;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      background: #fff;
+      transition: 0.2s;
+    }
+
+    .options button:hover {
+      background: #ffedf1;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* Valentine section */
     .heart {
-      font-size: 110px;
+      font-size: 100px;
       animation: pulse 1.5s infinite;
     }
 
@@ -41,25 +75,19 @@
       100% { transform: scale(1); }
     }
 
-    h1 {
-      font-family: 'Pacifico', cursive;
-      font-size: 36px;
-      margin: 15px 0 25px;
-    }
-
     .buttons {
       position: relative;
       height: 160px;
+      margin-top: 30px;
     }
 
-    button {
+    .buttons button {
+      position: absolute;
       padding: 14px 32px;
       font-size: 18px;
-      border: none;
       border-radius: 30px;
+      border: none;
       cursor: pointer;
-      position: absolute;
-      transition: left 0.15s ease, top 0.15s ease;
     }
 
     #yes {
@@ -71,7 +99,6 @@
 
     #no {
       background: #ddd;
-      color: #333;
       left: 50%;
       top: 80px;
       transform: translateX(-50%);
@@ -92,93 +119,106 @@
     .yay {
       display: none;
       font-family: 'Pacifico', cursive;
-      font-size: 42px;
+      font-size: 38px;
       margin-top: 20px;
       color: #ff1e56;
-    }
-
-    @media (max-width: 480px) {
-      h1 { font-size: 30px; }
-      .heart { font-size: 90px; }
     }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <div class="heart">❤️</div>
-  <h1>Will you be my Valentine?</h1>
 
-  <div class="buttons">
-    <button id="yes">YES 💖</button>
-    <button id="no">NO 🙄</button>
+  <!-- QUIZ -->
+  <div id="quiz">
+    <h1>Quick quiz 😌</h1>
+    <div class="score">Score: <span id="score">0</span>/5</div>
+    <div class="question" id="question"></div>
+    <div class="options" id="options"></div>
   </div>
 
-  <div class="joke" id="joke">
-    Saying no to me isn’t that easy 😌
+  <!-- RESULT MESSAGE -->
+  <div id="result" class="hidden">
+    <h1 id="resultText"></h1>
+    <button onclick="startValentine()">Next ➝</button>
   </div>
 
-  <div class="yay">🎉 YAAAAAY 🎉</div>
+  <!-- VALENTINE -->
+  <div id="valentine" class="hidden">
+    <div class="heart">❤️</div>
+    <h1>Will you be my Valentine?</h1>
+
+    <div class="buttons">
+      <button id="yes">YES 💖</button>
+      <button id="no">NO 🙄</button>
+    </div>
+
+    <div class="joke" id="joke">
+      Saying no to me isn’t that easy 😌
+    </div>
+
+    <div class="yay">🎉 YAAAAAY 🎉</div>
+  </div>
+
 </div>
 
 <script>
-  const noBtn = document.getElementById("no");
-  const yesBtn = document.getElementById("yes");
-  const joke = document.getElementById("joke");
-  const yayText = document.querySelector(".yay");
-
-  let noX = noBtn.offsetLeft;
-  let noY = noBtn.offsetTop;
-
-  document.addEventListener("mousemove", (e) => {
-    const rect = noBtn.getBoundingClientRect();
-    const btnCenterX = rect.left + rect.width / 2;
-    const btnCenterY = rect.top + rect.height / 2;
-
-    const dx = e.clientX - btnCenterX;
-    const dy = e.clientY - btnCenterY;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    if (distance < 100) {
-      joke.classList.add("show");
-
-      const angle = Math.atan2(dy, dx);
-      noX -= Math.cos(angle) * 25;
-      noY -= Math.sin(angle) * 25;
-
-      const maxX = window.innerWidth - rect.width - 20;
-      const maxY = window.innerHeight - rect.height - 20;
-
-      noX = Math.max(20, Math.min(maxX, noX));
-      noY = Math.max(20, Math.min(maxY, noY));
-
-      noBtn.style.left = noX + "px";
-      noBtn.style.top = noY + "px";
+  const questions = [
+    {
+      q: "When did we meet for the first time?",
+      options: ["Guwahati airport", "Guwahati railway station", "Rainbow falls", "Shimla ISBT"],
+      answer: 0
+    },
+    {
+      q: "Where did we kiss for the first time?",
+      options: ["Manali", "Kaza", "Chitkul", "Baspa river"],
+      answer: 3
+    },
+    {
+      q: "Where did we see our first ever sunrise together?",
+      options: ["Chakrata", "Kaza", "Shillong", "Tabo"],
+      answer: 2
+    },
+    {
+      q: "What is written on the tshirt you took from me?",
+      options: ["Perfectly imperfect", "Imperfectly perfect", "Imperfect and perfect", "Perfect but imperfect"],
+      answer: 0
+    },
+    {
+      q: "Which song did I sing for you the first time?",
+      options: ["Neeye Punchiri", "Chand Si Farish", "Zara Sa", "Kal Ho Naa Ho"],
+      answer: 2
     }
-  });
+  ];
 
-  yesBtn.addEventListener("click", () => {
-    yayText.style.display = "block";
-    yesBtn.style.display = "none";
-    noBtn.style.display = "none";
-    joke.style.display = "none";
+  let current = 0;
+  let score = 0;
 
-    const end = Date.now() + 4000;
+  const qEl = document.getElementById("question");
+  const optEl = document.getElementById("options");
+  const scoreEl = document.getElementById("score");
 
-    (function poppers() {
-      confetti({
-        particleCount: 8,
-        spread: 360,
-        startVelocity: 30,
-        origin: {
-          x: Math.random(),
-          y: Math.random() - 0.2
-        }
-      });
-      if (Date.now() < end) requestAnimationFrame(poppers);
-    })();
-  });
-</script>
+  function loadQuestion() {
+    qEl.textContent = questions[current].q;
+    optEl.innerHTML = "";
+    questions[current].options.forEach((opt, i) => {
+      const btn = document.createElement("button");
+      btn.textContent = opt;
+      btn.onclick = () => selectAnswer(i);
+      optEl.appendChild(btn);
+    });
+  }
 
-</body>
-</html>
+  function selectAnswer(i) {
+    if (i === questions[current].answer) score++;
+    scoreEl.textContent = score;
+    current++;
+    if (current < questions.length) {
+      loadQuestion();
+    } else {
+      showResult();
+    }
+  }
+
+  fun
+
