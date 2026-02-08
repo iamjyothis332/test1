@@ -214,7 +214,7 @@
     scoreEl.textContent = score;
     current++;
     if (current < questions.length) {
-      loadQuestion();
+      document.addEventListener("DOMContentLoaded", loadQuestion);
     } else {
       showResult();
     }
